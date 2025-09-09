@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Language Translator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            width: 100%;
+        }
+
+        /* Header Styles */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            text-align: center;
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            padding: 40px 0;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            height: 600px;
+        }
+
+        /* Panel Styles */
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .panel-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        /* Video Panel */
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            background: #34495e;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        #videoElement {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 15px;
+        }
+
+        .video-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #bdc3c7;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        .camera-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #2980b9, #21618c);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+        }
+
+        .btn.btn-danger:hover {
+            background: linear-gradient(135deg, #c0392b, #a93226);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+        }
+
+        .btn.btn-success {
+            background: linear-gradient(135deg, #27ae60, #229954);
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+        }
+
+        .btn.btn-success:hover {
+            background: linear-gradient(135deg, #229954, #1e8449);
+            box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+        }
+
+        .btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn:disabled:hover {
+            transform: none;
+        }
+
+        /* Translation Panel */
+        .current-detection {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .detection-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .speech-indicator {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            color: white;
+            font-size: 1.2rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .speech-indicator.speaking {
+            opacity: 1;
+            animation: pulse 1s infinite;
+        }
+
+        .voice-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .history-section {
+            flex: 1;
+        }
+
+        .history-title {
+            font-size: 1.2rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .history-list {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 15px;
+            height: 200px;
+            overflow-y: auto;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .history-item {
+            background: white;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+            position: relative;
+        }
+
+        .history-item:hover {
+            transform: translateX(5px);
+        }
+
+        .history-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .history-text {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .history-time {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+        }
+
+        .speak-btn {
+            background: none;
+            border: none;
+            color: #3498db;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 2px 5px;
+            border-radius: 3px;
+            transition: background-color 0.2s ease;
+        }
+
+        .speak-btn:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+
+        /* Upload Section Styles */
+        .upload-section {
+            padding: 20px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .upload-section h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .upload-section input[type="file"] {
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 1rem;
+            border: 1px solid #bdc3c7;
+            background: white;
+        }
+
+        #uploadResult {
+            margin-top: 15px;
+            font-weight: 600;
+            color: #27ae60;
+            font-size: 1.2rem;
+            min-height: 1.4em;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(44, 62, 80, 0.95);
+            color: white;
+            text-align: center;
+            padding: 25px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .footer-content {
+            font-size: 1rem;
+        }
+
+        .team-credits {
+            margin-top: 10px;
+            color: #bdc3c7;
+        }
+
+        /* Status Indicator */
+        .status-indicator {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #e74c3c;
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .status-indicator.active {
+            background: #2ecc71;
+            box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Voice Settings */
+        .voice-settings {
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .voice-setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .voice-setting-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .voice-setting-label {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.9rem;
+        }
+
+        .voice-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        select, input[type="range"] {
+            border-radius: 5px;
+            border: 1px solid #bdc3c7;
+            padding: 5px;
+        }
+
+        input[type="range"] {
+            width: 80px;
+        }
+
+        /* Toggle Switch Styles */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #2ecc71;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Speaking animation for speech indicator */
+        .speech-indicator.speaking {
+            animation: speakingPulse 0.8s ease-in-out infinite;
+        }
+
+        @keyframes speakingPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .main-content {
+                grid-template-columns: 1fr;
+                height: auto;
+                gap: 20px;
+            }
+
+            .panel {
+                padding: 20px;
+            }
+
+            .video-container {
+                height: 250px;
+            }
+
+            .history-list {
+                height: 150px;
+            }
+
+            .camera-controls {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 15px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+
+            .detection-text {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Scrollbar Styling */
+        .history-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .history-list::-webkit-scrollbar-track {
+            background: #ecf0f1;
+            border-radius: 10px;
+        }
+
+        .history-list::-webkit-scrollbar-thumb {
+            background: #bdc3c7;
+            border-radius: 10px;
+        }
+
+        .history-list::-webkit-scrollbar-thumb:hover {
+            background: #95a5a6;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <h1>Sign Language Translator</h1>
+                <p class="subtitle">Real-time sign language detection and translation with voice output</p>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="main-content">
+                <!-- Left Panel: Video Input -->
+                <div class="panel">
+                    <h2 class="panel-title">Video Input</h2>
+                    <div class="video-container">
+                        <video id="videoElement" autoplay muted playsinline style="display: none;"></video>
+                        <div class="video-placeholder" id="videoPlaceholder">
+                            <div>📹</div>
+                            <div>Camera Disabled</div>
+                        </div>
+                        <div class="status-indicator" id="statusIndicator"></div>
+                    </div>
+                    <div class="camera-controls">
+                        <button class="btn" id="toggleCameraBtn">Start Camera</button>
+                        <button class="btn btn-danger" id="clearHistoryBtn">Clear History</button>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Translation Output -->
+                <div class="panel">
+                    <h2 class="panel-title">Translation Output</h2>
+                    
+                    <!-- Voice Settings -->
+                    <div class="voice-settings">
+                        <div class="voice-setting-row">
+                            <span class="voice-setting-label">Auto Speech:</span>
+                            <div class="voice-control">
+                                <label class="switch">
+                                    <input type="checkbox" id="autoSpeechToggle" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="voice-setting-row">
+                            <span class="voice-setting-label">Speech Rate:</span>
+                            <div class="voice-control">
+                                <input type="range" id="speechRateSlider" min="0.5" max="2" step="0.1" value="1">
+                                <span id="rateValue">1.0x</span>
+                            </div>
+                        </div>
+                        <div class="voice-setting-row">
+                            <span class="voice-setting-label">Voice:</span>
+                            <div class="voice-control">
+                                <select id="voiceSelect">
+                                    <option value="">Default Voice</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="current-detection">
+                        <div class="detection-text" id="currentDetection">Waiting for sign detection...</div>
+                        <div class="speech-indicator" id="speechIndicator">🔊</div>
+                    </div>
+
+                    <div class="voice-controls">
+                        <button class="btn btn-success" id="speakCurrentBtn" disabled>🔊 Speak Current</button>
+                        <button class="btn" id="stopSpeechBtn" disabled>⏹️ Stop Speech</button>
+                    </div>
+
+                    <div class="history-section">
+                        <h3 class="history-title">Detection History</h3>
+                        <div class="history-list" id="historyList">
+                            <div style="text-align: center; color: #7f8c8d; margin-top: 50px;">
+                                No detections yet. Start the camera to begin!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Section - CORRECTLY PLACED HERE -->
+            <section class="upload-section">
+                <h3>Upload an image to identify the sign</h3>
+                <form id="uploadForm" style="display: inline-block;">
+                    <input type="file" id="uploadInput" name="image" accept="image/*" required />
+                    <button type="submit" class="btn" style="margin-left: 10px;">Upload & Predict</button>
+                </form>
+                <div id="uploadResult"></div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2025 Sign Language Translator Project</p>
+                <p class="team-credits">Developed by Unfiltered_Coders</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Global variables
+        let videoStream = null;
+        let isCameraActive = false;
+        let detectionInterval = null;
+        let detectionHistory = [];
+        let currentSign = '';
+        let speechSynthesis = window.speechSynthesis;
+        let voices = [];
+        let isAutoSpeechEnabled = true;
+        let speechRate = 1.0;
+        let selectedVoice = null;
+
+        // DOM elements
+        const videoElement = document.getElementById('videoElement');
+        const videoPlaceholder = document.getElementById('videoPlaceholder');
+        const toggleCameraBtn = document.getElementById('toggleCameraBtn');
+        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+        const currentDetection = document.getElementById('currentDetection');
+        const historyList = document.getElementById('historyList');
+        const statusIndicator = document.getElementById('statusIndicator');
+        const speechIndicator = document.getElementById('speechIndicator');
+        const autoSpeechToggle = document.getElementById('autoSpeechToggle');
+        const speechRateSlider = document.getElementById('speechRateSlider');
+        const rateValue = document.getElementById('rateValue');
+        const voiceSelect = document.getElementById('voiceSelect');
+        const speakCurrentBtn = document.getElementById('speakCurrentBtn');
+        const stopSpeechBtn = document.getElementById('stopSpeechBtn');
+
+        // Sample sign language words for simulation
+        const sampleSigns = [
+            'Hello', 'Thank you', 'Please', 'Sorry', 'Yes', 'No', 
+            'Good morning', 'How are you?', 'I love you', 'Water', 
+            'Food', 'Help', 'More', 'Finished', 'Beautiful', 'Happy'
+        ];
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Sign Language Translator with Voice initialized');
+            initializeSpeechSynthesis();
+            setupEventListeners();
+        });
+
+        // Initialize speech synthesis
+        function initializeSpeechSynthesis() {
+            // Load available voices
+            function loadVoices() {
+                voices = speechSynthesis.getVoices();
+                populateVoiceSelect();
+            }
+
+            // Populate voice selection dropdown
+            function populateVoiceSelect() {
+                voiceSelect.innerHTML = '<option value="">Default Voice</option>';
+                voices.forEach((voice, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    if (voice.default) {
+                        option.selected = true;
+                        selectedVoice = voice;
+                    }
+                    voiceSelect.appendChild(option);
+                });
+            }
+
+            // Load voices immediately if available
+            loadVoices();
+
+            // Listen for voice loading (some browsers load voices asynchronously)
+            if (speechSynthesis.addEventListener) {
+                speechSynthesis.addEventListener('voiceschanged', loadVoices);
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            toggleCameraBtn.addEventListener('click', toggleCamera);
+            clearHistoryBtn.addEventListener('click', clearDetectionHistory);
+            
+            // Voice control event listeners
+            autoSpeechToggle.addEventListener('change', function() {
+                isAutoSpeechEnabled = this.checked;
+                console.log('Auto speech:', isAutoSpeechEnabled ? 'enabled' : 'disabled');
+            });
+
+            speechRateSlider.addEventListener('input', function() {
+                speechRate = parseFloat(this.value);
+                rateValue.textContent = speechRate.toFixed(1) + 'x';
+            });
+
+            voiceSelect.addEventListener('change', function() {
+                if (this.value) {
+                    selectedVoice = voices[parseInt(this.value)];
+                } else {
+                    selectedVoice = null;
+                }
+            });
+
+            speakCurrentBtn.addEventListener('click', function() {
+                if (currentSign) {
+                    speakText(currentSign);
+                }
+            });
+
+            stopSpeechBtn.addEventListener('click', function() {
+                stopSpeaking();
+            });
+        }
+
+        // Speech synthesis functions
+        function speakText(text, showIndicator = true) {
+            if (!text || text.trim() === '') return;
+
+            // Stop any current speech
+            speechSynthesis.cancel();
+
+            // Create speech utterance
+            const utterance = new SpeechSynthesisUtterance(text);
+            
+            // Set voice properties
+            utterance.rate = speechRate;
+            utterance.volume = 1;
+            utterance.pitch = 1;
+            
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
+            }
+
+            // Event listeners for speech
+            utterance.onstart = function() {
+                if (showIndicator) {
+                    speechIndicator.classList.add('speaking');
+                }
+                stopSpeechBtn.disabled = false;
+                console.log('Started speaking:', text);
+            };
+
+            utterance.onend = function() {
+                if (showIndicator) {
+                    speechIndicator.classList.remove('speaking');
+                }
+                stopSpeechBtn.disabled = true;
+                console.log('Finished speaking:', text);
+            };
+
+            utterance.onerror = function(event) {
+                console.error('Speech synthesis error:', event.error);
+                speechIndicator.classList.remove('speaking');
+                stopSpeechBtn.disabled = true;
+            };
+
+            // Speak the text
+            speechSynthesis.speak(utterance);
+        }
+
+        function stopSpeaking() {
+            speechSynthesis.cancel();
+            speechIndicator.classList.remove('speaking');
+            stopSpeechBtn.disabled = true;
+            console.log('Speech stopped');
+        }
+
+        // Toggle camera on/off
+        async function toggleCamera() {
+            if (isCameraActive) {
+                stopCamera();
+            } else {
+                await startCamera();
+            }
+        }
+
+        // Start camera stream
+        async function startCamera() {
+            try {
+                console.log('Requesting camera access...');
+                
+                // Request camera permission and stream
+                videoStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        width: { ideal: 640 }, 
+                        height: { ideal: 480 },
+                        facingMode: 'user'
+                    } 
+                });
+
+                // Set up video element
+                videoElement.srcObject = videoStream;
+                videoElement.style.display = 'block';
+                videoPlaceholder.style.display = 'none';
+                
+                // Update UI state
+                isCameraActive = true;
+                toggleCameraBtn.textContent = 'Stop Camera';
+                toggleCameraBtn.classList.add('btn-danger');
+                statusIndicator.classList.add('active');
+                
+                console.log('Camera started successfully');
+                
+                // Start sign detection simulation
+                startSignDetection();
+                
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                alert('Unable to access camera. Please ensure you have granted camera permissions and try again.');
+                handleCameraError();
+            }
+        }
+
+        // Stop camera stream
+        function stopCamera() {
+            console.log('Stopping camera...');
+            
+            // Stop all video tracks
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => {
+                    track.stop();
+                });
+                videoStream = null;
+            }
+
+            // Reset video element
+            videoElement.srcObject = null;
+            videoElement.style.display = 'none';
+            videoPlaceholder.style.display = 'flex';
+            
+            // Update UI state
+            isCameraActive = false;
+            toggleCameraBtn.textContent = 'Start Camera';
+            toggleCameraBtn.classList.remove('btn-danger');
+            statusIndicator.classList.remove('active');
+            
+            // Stop sign detection
+            stopSignDetection();
+            
+            // Reset current detection display
+            currentSign = '';
+            currentDetection.textContent = 'Camera stopped. Click "Start Camera" to resume.';
+            speakCurrentBtn.disabled = true;
+            
+            // Stop any ongoing speech
+            stopSpeaking();
+            
+            console.log('Camera stopped successfully');
+        }
+
+        // Handle camera access errors
+        function handleCameraError() {
+            isCameraActive = false;
+            toggleCameraBtn.textContent = 'Start Camera';
+            toggleCameraBtn.classList.remove('btn-danger');
+            statusIndicator.classList.remove('active');
+            currentDetection.textContent = 'Camera access denied. Please check permissions.';
+            speakCurrentBtn.disabled = true;
+        }
+
+        // Start sign detection simulation
+        function startSignDetection() {
+            console.log('Starting sign detection...');
+            
+            // Update current detection display
+            currentDetection.textContent = 'Analyzing hand movements...';
+            
+            // Simulate sign detection every 2-4 seconds
+            detectionInterval = setInterval(() => {
+                if (isCameraActive && Math.random() > 0.3) { // 70% chance of detection
+                    simulateSignDetection();
+                }
+            }, getRandomInterval(2000, 4000));
+        }
+
+        // Stop sign detection
+        function stopSignDetection() {
+            if (detectionInterval) {
+                clearInterval(detectionInterval);
+                detectionInterval = null;
+                console.log('Sign detection stopped');
+            }
+        }
+
+        // Simulate sign detection (placeholder for actual ML integration)
+        function simulateSignDetection() {
+            // TODO: Replace this with actual backend integration
+            const detectedSign = getRandomSign();
+            const confidence = (Math.random() * 0.4 + 0.6) * 100; // 60-100% confidence
+            
+            console.log(`Detected sign: ${detectedSign} (${confidence.toFixed(1)}% confidence)`);
+            
+            // Update current detection display
+            updateCurrentDetection(detectedSign, confidence);
+            
+            // Add to history
+            addToDetectionHistory(detectedSign, confidence);
+            
+            // Speak the detected sign if auto-speech is enabled
+            if (isAutoSpeechEnabled) {
+                speakText(detectedSign);
+            }
+        }
+
+        // Update current detection display
+        function updateCurrentDetection(sign, confidence) {
+            currentSign = sign;
+            
+            currentDetection.innerHTML = `
+                <div style="font-size: 1.5rem; margin-bottom: 5px;">${sign}</div>
+                <div style="font-size: 0.9rem; opacity: 0.8;">Confidence: ${confidence.toFixed(1)}%</div>
+            `;
+            
+            // Enable speak current button
+            speakCurrentBtn.disabled = false;
+            
+            // Add visual feedback animation
+            currentDetection.style.transform = 'scale(1.05)';
+            setTimeout(() => {
+                currentDetection.style.transform = 'scale(1)';
+            }, 200);
+        }
+
+        // Add detection to history
+        function addToDetectionHistory(sign, confidence) {
+            const timestamp = new Date();
+            const detection = {
+                sign: sign,
+                confidence: confidence,
+                timestamp: timestamp,
+                id: Date.now() + Math.random()
+            };
+            
+            // Add to beginning of history array
+            detectionHistory.unshift(detection);
+            
+            // Keep only last 20 detections
+            if (detectionHistory.length > 20) {
+                detectionHistory = detectionHistory.slice(0, 20);
+            }
+            
+            // Update history display
+            updateHistoryDisplay();
+        }
+
+        // Update history display
+        function updateHistoryDisplay() {
+            if (detectionHistory.length === 0) {
+                historyList.innerHTML = `
+                    <div style="text-align: center; color: #7f8c8d; margin-top: 50px;">
+                        No detections yet. Start the camera to begin!
+                    </div>
+                `;
+                return;
+            }
+            
+            let historyHTML = '';
+            detectionHistory.forEach((detection, index) => {
+                const timeString = detection.timestamp.toLocaleTimeString();
+                historyHTML += `
+                    <div class="history-item" style="animation: fadeInUp 0.3s ease ${index * 0.1}s both;">
+                        <div class="history-text">
+                            ${detection.sign}
+                            <button class="speak-btn" onclick="speakText('${detection.sign}', false)" title="Speak this text">🔊</button>
+                        </div>
+                        <div class="history-time">${timeString} • ${detection.confidence.toFixed(1)}% confidence</div>
+                    </div>
+                `;
+            });
+            
+            historyList.innerHTML = historyHTML;
+            
+            // Auto-scroll to top for new detections
+            historyList.scrollTop = 0;
+        }
+
+        // Clear detection history
+        function clearDetectionHistory() {
+            if (detectionHistory.length === 0) {
+                return;
+            }
+            
+            if (confirm('Are you sure you want to clear the detection history?')) {
+                detectionHistory = [];
+                updateHistoryDisplay();
+                console.log('Detection history cleared');
+            }
+        }
+
+        // Utility functions
+        function getRandomSign() {
+            return sampleSigns[Math.floor(Math.random() * sampleSigns.length)];
+        }
+
+        function getRandomInterval(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // Handle page visibility changes (pause detection when tab is not active)
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden && isCameraActive) {
+                console.log('Tab hidden, pausing detection');
+                stopSignDetection();
+                stopSpeaking();
+            } else if (!document.hidden && isCameraActive) {
+                console.log('Tab visible, resuming detection');
+                startSignDetection();
+            }
+        });
+
+        // Handle page unload (cleanup)
+        window.addEventListener('beforeunload', function() {
+            if (isCameraActive) {
+                stopCamera();
+            }
+            stopSpeaking();
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            // Space bar to toggle speech for current detection
+            if (event.code === 'Space' && currentSign && !event.target.matches('input, select, textarea')) {
+                event.preventDefault();
+                if (speechSynthesis.speaking) {
+                    stopSpeaking();
+                } else {
+                    speakText(currentSign);
+                }
+            }
+            
+            // Escape to stop speech
+            if (event.code === 'Escape' && speechSynthesis.speaking) {
+                stopSpeaking();
+            }
+        });
+
+        // Test speech synthesis on first user interaction
+        let speechTestDone = false;
+        document.addEventListener('click', function() {
+            if (!speechTestDone) {
+                speechTestDone = true;
+                // Test if speech synthesis works (silent test)
+                const testUtterance = new SpeechSynthesisUtterance('');
+                testUtterance.volume = 0;
+                speechSynthesis.speak(testUtterance);
+                console.log('Speech synthesis initialized');
+            }
+        });
+
+        // === UPLOAD FORM HANDLER - SINGLE CLEAN IMPLEMENTATION ===
+        const uploadForm = document.getElementById('uploadForm');
+        const uploadInput = document.getElementById('uploadInput');
+        const uploadResult = document.getElementById('uploadResult');
+
+        if (uploadForm) {
+            uploadForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                uploadResult.textContent = "Processing...";
+
+                if (!uploadInput.files.length) {
+                    alert("Please select an image.");
+                    uploadResult.textContent = "";
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('image', uploadInput.files[0]);
+
+                try {
+                    const response = await fetch('/predict', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Prediction failed');
+                    }
+
+                    const data = await response.json();
+
+                    if (data.sign) {
+                        const confPercent = (data.confidence * 100).toFixed(1);
+                        uploadResult.textContent = `Prediction: ${data.sign} (Confidence: ${confPercent}%)`;
+                    } else {
+                        uploadResult.textContent = "No prediction returned.";
+                    }
+                } catch (error) {
+                    uploadResult.textContent = `Error: ${error.message}`;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
