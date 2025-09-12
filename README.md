@@ -1,3 +1,8 @@
+## License
+This project is released with **No License (All Rights Reserved)**.  
+You are free to view the code, but you may not copy, modify, or distribute it without explicit permission.
+
+
 # \# SIGN LANGUAGE TRANSLATOR
 A real-time web application that detects and translates American Sign Language (ASL) letters from live camera input or uploaded images. It provides text and speech output to enhance communication accessibility.
 
