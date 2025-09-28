@@ -1,6 +1,5 @@
-## License
-This project is released with **No License (All Rights Reserved)**.  
-You are free to view the code, but you may not copy, modify, or distribute it without explicit permission.
+## MIT License
+This project is released with **MIT License (All Rights Reserved)**.  
 
 
 # \# SIGN LANGUAGE TRANSLATOR
