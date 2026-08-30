@@ -13,7 +13,7 @@ import tensorflow as tf
 import requests
 
 # ---------- CONFIG ----------
-MODEL_DIR = "model"
+MODEL_DIR = "."
 H5_MODEL_PATH = os.path.join(MODEL_DIR, "sign_language_model.h5")
 TFLITE_MODEL_PATH = os.path.join(MODEL_DIR, "sign_language_model.tflite")
 LABELS_PATH = os.path.join(MODEL_DIR, "labels.json")
@@ -22,7 +22,7 @@ IMG_SIZE = 64
 CHANNEL_LAST = True  # most TF models expect channels_last
 
 # ---------- APP ----------
-app = Flask(__name__)
+app = Flask(__name__, template_folder='.')
 CORS(app)  # enable CORS for all routes
 
 # ---------- HELPERS ----------
